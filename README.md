@@ -29,7 +29,7 @@ agents/
 ├── notion_agent.json
 ├── google_calendar_agent.json
 └── google_tasks_agent.json
-
+```plaintext
 
 ---
 
