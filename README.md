@@ -20,6 +20,7 @@ It brings together multiple specialized sub-agents to handle your daily workflow
 
 Each agent is represented by a modular **JSON file** built in [n8n](https://n8n.io/), enabling easy migration, customization, and scaling.
 
+```plaintext
 agents/
 │
 ├── mrt_agent.json
