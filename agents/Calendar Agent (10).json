@@ -1,0 +1,385 @@
+{
+  "name": "Calendar Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7ab380a2-a8d3-421c-ab4e-748ea8fb7904",
+              "name": "response",
+              "value": "Unable to perform task. Please try again.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1c55e3c2-a17e-471f-bf0f-e2d6281f1f91",
+      "name": "Try Again",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "39c2f302-03be-4464-a17a-d7cc481d6d44",
+              "name": "=response",
+              "value": "={{$json.output}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "911252da-7162-4668-bd66-0e0042f0e6d7",
+      "name": "Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=\n# Overview\n\nYou are a calendar assistant. Your responsibilities include creating, getting, updating, and deleting events in the user's calendar.\n\n**Calendar Management Tools**\n\n* Use \"Create Event with Attendee\" when an event includes a participant.\n* Use \"Create Event\" for solo events.\n* Use \"Get Events\" to fetch calendar schedules when requested.\n* Use \"Delete Event\" to delete an event. You must use \"Get Events\" first to get the ID of the event to delete.\n* Use \"Update Event\" to update an event. You must use \"Get Events\" first to get the ID of the event to update.\n\n**Timezone Policy**\n\n* All events MUST be created and updated using **Europe/Madrid (Spain time)** as the default timezone.\n* When the user provides a date/time without specifying a timezone, ASSUME it is **Spain local time**.\n* Only if the user explicitly mentions another timezone (e.g., IST, EST, PST), adjust accordingly. Otherwise, always default to **Europe/Madrid**.\n\n**Rescheduling & Updating Events**\n\n* When the user asks to **reschedule a meeting** or **change an existing meeting**, you MUST:\n\n  1. Use **Get Events** to retrieve all upcoming events, including their IDs, dates and calendar details.\n  2. Identify the **relevant event** based on the user’s request (title, date, time, or participants).\n  3. Once identified, use the **Update Event** tool to modify the meeting details (such as time, date, or attendees) according to the user’s instructions.\n  4. ALWAYS save the updated event in **Europe/Madrid** timezone unless otherwise specified.\n\n## Final Notes\n\nHere is the current date/time: {{ $now }}\nIf a duration for an event isn't specified, assume it will be one hour.\nAlways store, interpret, and display event times in **Spain local time (Europe/Madrid)** by default\n\n**Additional Rules for Identifying, Managing, and Deleting Events (Safe & Non-Hallucinating)**\n\n**General References**\n\n* When the user references an event imprecisely (e.g., *\"delete the meeting with Vibhor at 16:30\"*, *\"move my call with Anna tomorrow\"*, *\"cancel the standup\"*), do not rely only on the literal event title.\n* Always run **Get Events** and filter candidates by:\n\n  * **Title** (substring match, case-insensitive)\n  * **Attendees** (name or email substring)\n  * **Start date and time** (interpreted in *Europe/Madrid* unless otherwise specified)\n  * **Location or description** (substring match)\n* Allow for common short forms or partial matches (e.g., *\"Vibhor\"* matches *\"Vibhor Sharma\"*).\n* **Time tolerance**: if the user specifies a time without seconds, accept **±15 minutes**.\n\n**Ambiguity Handling**\n\n* If **zero matches** are found, report that no matching events exist — never invent one.\n* If **multiple matches** are found, list up to **5 candidate events** (*Title / Start in Europe/Madrid / Attendees*) and ask the user to choose.\n* Always prefer higher-confidence matches:\n\n  1. **ID**\n  2. **Exact title**\n  3. **Attendee + time**\n  4. **Substring**\n\n**Non-Hallucination Rules**\n\n* Never invent event IDs, times, or participants — only use data from **Get Events**.\n* Never add branding or self-referential lines (e.g., *\"I’m your MRT...\"*). Keep responses concise and factual.\n* If the request is too vague, ask the user for clarification instead of guessing.\n\n"
+        }
+      },
+      "id": "6dd452d1-2329-49f7-bb76-bc7b111768ab",
+      "name": "Calendar Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -608,
+        96
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "vibhorgautam907@gmail.com",
+          "mode": "list",
+          "cachedResultName": "vibhorgautam907@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('attendees0_Attendees', ``, 'string') }}"
+          ],
+          "conferenceDataUi": {
+            "conferenceDataValues": {
+              "conferenceSolution": "hangoutsMeet"
+            }
+          },
+          "sendUpdates": "all",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -720,
+        320
+      ],
+      "id": "397e3f81-d0af-4cc3-8e88-f45fb1c8216d",
+      "name": "Create Event with Attendee",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "sXx9qedgJg5HBcTV",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "vibhorgautam907@gmail.com",
+          "mode": "list",
+          "cachedResultName": "vibhorgautam907@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "attendees": [],
+          "conferenceDataUi": {
+            "conferenceDataValues": {
+              "conferenceSolution": "hangoutsMeet"
+            }
+          },
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -592,
+        320
+      ],
+      "id": "9655b5b7-0046-48fc-bd9c-a9d378f50360",
+      "name": "Create Event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "sXx9qedgJg5HBcTV",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "vibhorgautam907@gmail.com",
+          "mode": "list",
+          "cachedResultName": "vibhorgautam907@gmail.com"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -464,
+        320
+      ],
+      "id": "f0106e62-b5c4-42b5-b180-44e31a70a8e6",
+      "name": "Get Events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "sXx9qedgJg5HBcTV",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "vibhorgautam907@gmail.com",
+          "mode": "list",
+          "cachedResultName": "vibhorgautam907@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -336,
+        320
+      ],
+      "id": "16262621-98aa-465c-84da-9e7f8463caa4",
+      "name": "Delete Event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "sXx9qedgJg5HBcTV",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "vibhorgautam907@gmail.com",
+          "mode": "list",
+          "cachedResultName": "vibhorgautam907@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "updateFields": {
+          "attendeesUi": {
+            "values": {
+              "attendees": [
+                "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('attendees0_Attendees', ``, 'string') }}"
+              ]
+            }
+          },
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}",
+          "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+          "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -208,
+        320
+      ],
+      "id": "37ee9b4d-61fc-4d90-83ce-32521e3136a1",
+      "name": "Update Event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "sXx9qedgJg5HBcTV",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1072,
+        96
+      ],
+      "id": "c1e9b533-a0c6-49d7-a06d-031ed43f5d90",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -848,
+        320
+      ],
+      "id": "df32bf35-3d31-474e-9a19-9afc7b13d645",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "pisjl8meCAvs0klq",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Calendar Agent": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Try Again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Event with Attendee": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Event": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Events": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Event": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Event": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Madrid",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "b42b6be5-f98c-4cb3-a1de-a673a6248a5d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a29ad127421992267aa5be681cc1a129ab50f7107f3b2d0aa46d81a7f7620c98"
+  },
+  "id": "hWRKXqPVNQnO2z8M",
+  "tags": []
+}

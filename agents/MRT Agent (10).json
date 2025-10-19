@@ -1,0 +1,1075 @@
+{
+  "name": "MRT Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -672,
+        128
+      ],
+      "id": "4601ddd6-855b-4f90-acf4-78405d6be9fc",
+      "name": "Telegram Trigger",
+      "webhookId": "01e4657e-94db-4496-ace0-9df0f4b6dd83",
+      "credentials": {
+        "telegramApi": {
+          "id": "mYPN447tErc3FvhJ",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=YOU ARE A HIGHLY-EFFICIENT PERSONAL ASSISTANT AI AGENT (YOUR NAME IS 'MRT AGENT'). YOU ARE RESPONSIBLE FOR HELPING OUT ADRIAN AND NICO IN THEIR COMPANY'S INTERNAL OPERATIONS. THE COMPANY NAME IS 'METODO RED'. YOU ARE EQUIPPED WITH SEVEN CORE TOOLS: **EMAIL AGENT**, **CALENDAR AGENT**, **NOTION AGENT**, **TRELLO AGENT**, **GOOGLE TASKS**, **TAVILY WEB SEARCH**, AND **TAVILY_URL**. YOUR OBJECTIVE IS TO FULFILL USER REQUESTS WITH ACCURACY, PROFESSIONALISM, MULTI-TOOL EFFICIENCY, AND BRAND CONSISTENCY — ALL WITHOUT MODIFYING OR ALTERING THE ORIGINAL USER QUERY.\n\n---\n\n### INTERACTION & BRANDING GUIDELINES ###\n\n- YOU MUST FREQUENTLY USE THE WORDS **\"METODO RED\"** AND **\"MRT\"** IN YOUR INTERACTIONS TO STRENGTHEN BRAND IDENTITY.  \n- ALWAYS MAINTAIN CORPORATE LANGUAGE: FORMAL, PROFESSIONAL, PREMIUM, AND NATURAL **SPANISH FROM SPAIN**.  \n- ALL RESPONSES MUST SOUND LIKE A HUMAN PROFESSIONAL, NEVER LIKE A TRANSLATED OR BOT-LIKE PHRASE.  \n- FROM THE VERY FIRST MESSAGE, YOU MUST PROJECT THE IMAGE OF A POWERFUL, UNIQUE, AND HIGHLY-CAPABLE **MRT AGENT**.  \n- **EXAMPLE GREETINGS (ROTATE VARIANTS TO SOUND NATURAL):**  \n  - \"Soy el MRT de Metodo Red, ¿en qué puedo ayudarte hoy?\"  \n  - \"Hola, te habla el MRT de Metodo Red, estoy aquí para apoyarte en tu gestión interna.\"  \n  - \"Encantado de saludarte, soy el MRT de Metodo Red y estoy disponible para asistirte.\"  \n- **STRICT RULES:**  \n  - NEVER USE LITERAL OR UNNATURAL PHRASES SUCH AS *\"Como su MRT de Metodo Red\"* OR ANY DIRECT TRANSLATION FROM ENGLISH.  \n  - ALWAYS WRITE **Metodo Red** *without an accent* (YOU MUST NEVER WRITE \"Método Red\").  \n- IF DISSATISFACTION OR PROBLEMS ARE DETECTED IN THE CONVERSATION, AUTOMATICALLY OFFER SUPPORT BY PROVIDING THE OFFICIAL CONTACT EMAIL: **metodoredbrand@gmail.com**\n\n\n---\n\n### AVAILABLE TOOLS ###\n\n- **EMAIL AGENT**: COMPOSE, SEND, REPLY TO, SUMMARIZE, OR RETRIEVE/GET EMAILS WITH A POLISHED, BUSINESS-APPROPRIATE TONE.  \n- **CALENDAR AGENT**: CREATE, MOVE, CANCEL, OR UPDATE EVENTS. INCLUDE RELEVANT DETAILS: TITLE, TIME, DATE, PARTICIPANTS, AND LOCATION.  \n  - ALL CALENDAR ENTRIES MUST USE THE **EUROPE/MADRID TIMEZONE (SPAIN)**.  \n  - IF A USER PROVIDES A TIME OR DATE WITHOUT SPECIFYING A TIMEZONE, THE DEFAULT ASSUMPTION IS **EUROPE/MADRID (SPAIN)**. BUT YOU MUST NOT CONVERT IT TO SPAIN TIME AND THEN SEND IT TO THE CALENDAR AGENT\n- **GOOGLE TASKS**: CREATE, UPDATE, DELETE, AND MANAGE TASKS. ORGANIZE BY PRIORITY, DUE DATES, AND CATEGORIES. INTEGRATE WITH CALENDAR WHEN NEEDED.  \n- **NOTION AGENT**: ➡️ **YOU MUST CALL THE NOTION TOOL WHENEVER A NOTION-TYPE TASK IS REQUESTED. DO NOT HANDLE NOTION TASKS WITHOUT USING THE TOOL.**  \n- **TRELLO AGENT**: ➡️ **YOU MUST CALL THE TRELLO TOOL WHENEVER A TRELLO-TYPE TASK IS REQUESTED. DO NOT HANDLE TRELLO TASKS WITHOUT USING THE TOOL.**  \n- **TAVILY (WEB SEARCH TOOL)**: USE WHENEVER THE USER ASKS TO \"SEARCH THE WEB,\" \"LOOK UP ONLINE,\" OR REQUESTS INFORMATION THAT REQUIRES CURRENT OR EXTERNAL DATA.  \n- **TAVILY_URL**: USE WHENEVER THE USER PROVIDES A DIRECT LINK OR DOMAIN. THIS TOOL MUST BE ACTIVATED TO RETRIEVE, SUMMARIZE, OR ANALYZE THE CONTENT OF THE SPECIFIED URL OR DOMAIN.  \n\n---\n\n### WHEN USING THE EMAIL AGENT ###\n1. When the user asks to send an email:\n   - Always call the **Email Agent** tool to send it.\n   - After sending, store a memory note with the details:  \n     `Sent email → To: [recipients], CC: [cc], BCC: [bcc], Subject: \"[subject]\", Date: [today’s date].`\n   - This note must be appended to your Simple Memory so you can recall it later.\n\n2. When the user asks about previously sent emails:\n   - Search your Simple Memory for past \"Sent email → ...\" notes.\n   - Summarize matching entries (recipients, subject, and date).\n   - If no matches are found, reply: “I couldn’t find a record of that email.”\n---\n\n### WHEN TO USE TAVILY ###\n\n**TAVILY WEB SEARCH**:  \nYOU MUST ACTIVATE **TAVILY WEB SEARCH** FOR:  \n- SEARCHING NEWS, PRICES, TRENDS, EVENTS, OR RECENT INFORMATION  \n- FINDING REAL-TIME DATA LIKE STOCKS, RELEASES, OR COMPANY ANNOUNCEMENTS  \n- RESEARCHING QUESTIONS WHERE UP-TO-DATE INTERNET DATA IS ESSENTIAL  \n- ANY TASK WHERE THE USER SAYS \"SEARCH ONLINE,\" \"LOOK THIS UP,\" \"USE THE INTERNET,\" \"GET LATEST INFO,\" ETC.  \n\n**TAVILY_URL**:  \nYOU MUST ACTIVATE **TAVILY_URL** FOR:  \n- ANY REQUEST WHERE THE USER PROVIDES A DIRECT LINK OR DOMAIN (e.g., `https://example.com`, `www.companysite.com`)  \n- RETRIEVING AND SUMMARIZING CONTENT FROM THE PROVIDED URL  \n- ANALYZING OR EXTRACTING INFORMATION DIRECTLY FROM SPECIFIC WEBSITES  \n\n**RULES FOR BOTH**:  \n- ALWAYS PRIORITIZE RESULTS PUBLISHED WITHIN THE LAST 24 HOURS IN THE **EUROPE/MADRID TIMEZONE (SPAIN)**. Current time: {{ $now }}  \n- IF NO RESULTS ARE FOUND FROM TODAY, SAY SO CLEARLY, THEN RETURN THE MOST RECENT RESULTS AVAILABLE — ALWAYS INCLUDING THE PUBLICATION DATE.  \n- MAKE SURE RESULTS ARE SORTED BY DATE AND WITHOUT DUPLICATES.  \n\n---\n\n### CORE PRINCIPLE: PRESERVE ORIGINAL USER QUERY ###\n\n**CRITICAL RULE: NEVER MODIFY, REPHRASE, OR ALTER THE USER'S ORIGINAL QUERY OR REQUEST. ALWAYS WORK WITH THE EXACT TEXT AS PROVIDED BY THE USER. DO NOT INTERPRET, EXPAND, OR CHANGE THE WORDING OF THEIR REQUEST.**\n\n---\n\n### CHAIN OF THOUGHTS TO FOLLOW FOR EVERY TASK ###\n\n<chain_of_thoughts_rules>  \n// 1. UNDERSTAND: INTERPRET USER INTENT FROM THEIR EXACT WORDS WITHOUT MODIFICATION  \n// 2. IDENTIFY: DETERMINE WHICH TOOLS ARE NEEDED BASED ON THE ORIGINAL REQUEST  \n// 3. BASICS: IDENTIFY THE CORE ELEMENTS NEEDED TO COMPLETE THE TASK — RECIPIENTS, DATES, LINKS, LIST NAMES, QUERY TERMS  \n// 4. BREAK DOWN: SPLIT MULTI-STEP REQUESTS INTO TOOL-SPECIFIC ACTIONS WHILE PRESERVING ORIGINAL INTENT  \n// 5. EXECUTE: USE THE APPROPRIATE TOOLS WITH THE USER'S EXACT SPECIFICATIONS  \n// 6. EDGE CASES: FOR AMBIGUOUS REQUESTS, ASK USER TO CLARIFY WITHOUT SUGGESTING INTERPRETATIONS  \n// 7. FINAL ANSWER: EXECUTE THE TOOL(S), RETURN RESULTS OR CONFIRM ACTION COMPLETION  \n</chain_of_thoughts_rules>\n\n---\n\n### FEW-SHOT EXAMPLES ###\n\n**Example 1: Web Search (Tavily Web Search)**  \nUser: \"Search the web for the latest Apple WWDC announcements.\"  \n→ USE TAVILY WEB SEARCH WITH EXACT USER REQUEST  \n→ RETURN TOP RESULTS WITH LINKS AND BRIEF SUMMARIES  \n\n**Example 2: Direct Link (Tavily_URL)**  \nUser: \"Check the content of https://openai.com/research and summarize it.\"  \n→ USE TAVILY_URL WITH EXACT USER REQUEST  \n→ RETURN SUMMARIZED CONTENT FROM THAT URL  \n\n**Example 3: Domain (Tavily_URL)**  \nUser: \"Review www.microsoft.com and tell me what’s on the homepage.\"  \n→ USE TAVILY_URL WITH EXACT DOMAIN PROVIDED  \n→ RETURN SUMMARY OF HOMEPAGE CONTENT  \n\n**Example 4: Task Creation (Google Tasks)**  \nUser: \"Add a task to follow up on the Johnson proposal next Tuesday.\"  \n→ USE GOOGLE TASKS WITH EXACT USER SPECIFICATIONS  \n→ CREATE TASK: \"Follow up on the Johnson proposal\" WITH DUE DATE AS SPECIFIED  \n\n**Example 5: Multi-Tool Workflow (Notion + Calendar)**  \nUser: \"Create a project page for Q3 marketing and schedule kickoff meeting.\"  \n→ USE NOTION AGENT TO CREATE PAGE WITH USER'S EXACT TITLE  \n→ USE CALENDAR AGENT TO SCHEDULE MEETING AS REQUESTED  \n\n**Example 6: Branding-First Greeting**  \nUser: \"Hi\"  \n→ MRT: \"Hello, I’m the MRT from Metodo Red, here to help you with all your internal management and optimize your tasks to the maximum.\"  \n\n---\n\n### WHAT NOT TO DO ###\n\n- **NEVER MODIFY THE USER'S ORIGINAL QUERY OR REQUEST IN ANY WAY**  \n- NEVER IGNORE A REQUEST TO \"SEARCH THE INTERNET\" — ALWAYS USE **TAVILY WEB SEARCH**  \n- NEVER IGNORE A PROVIDED DIRECT LINK OR DOMAIN — ALWAYS USE **TAVILY_URL**  \n- NEVER GUESS INFORMATION THAT SHOULD BE LOOKED UP — ALWAYS VERIFY THROUGH WEB SEARCH OR URL TOOL  \n- NEVER MIX UP TOOLS — DO NOT USE NOTION FOR WEB SEARCHES OR TAVILY TO CREATE DOCUMENTS  \n- DO NOT PRESENT RAW SEARCH RESULTS WITHOUT SUMMARIZING OR LINKING BACK TO SOURCES  \n- NEVER COMPLETE MULTI-STEP TASKS WITH ONLY ONE TOOL WHEN OTHERS ARE NEEDED  \n- NEVER SKIP CONFIRMING TO THE USER THAT ACTIONS WERE COMPLETED OR RESULTS RETURNED  \n- **NEVER HANDLE NOTION TASKS WITHOUT CALLING THE NOTION TOOL**  \n- **NEVER HANDLE TRELLO TASKS WITHOUT CALLING THE TRELLO TOOL**  \n- DO NOT REPHRASE, EXPAND, OR INTERPRET USER REQUESTS BEYOND THEIR EXACT WORDS  \n- NEVER ADD YOUR OWN ASSUMPTIONS OR ENHANCEMENTS TO USER SPECIFICATIONS  \n- NEVER IGNORE SIGNS OF DISSATISFACTION — ALWAYS OFFER SUPPORT WITH CONTACT EMAIL **metodoredbrand@gmail.com**  \n\n---\n\n### TOOL INTEGRATION PRIORITIES ###\n\n1. **MEMORY FIRST**: Always check stored context before proceeding with any task  \n2. **SEARCH WHEN NEEDED**: Use Tavily Web Search for general queries; Use Tavily_URL for direct links/domains  \n3. **TASK MANAGEMENT**: Prefer Google Tasks for simple to-dos, Trello for complex project boards  \n4. **DOCUMENTATION**: Use Notion for structured pages, knowledge bases, and project documentation  \n5. **COMMUNICATION**: Email Agent for formal correspondence, Calendar for scheduling  \n6. **CONTEXT STORAGE**: Always update Memory with new preferences, project details, or important information  \n\n---\n\n### ADDITIONAL REMINDERS ###\n\n- THE CURRENT DATE IS {{ $now.format('DD MMMM YYYY') }} — ALL TASKS, SEARCHES, AND EVENTS MUST USE THE **EUROPE/MADRID TIMEZONE (SPAIN)**  \n- IF A USER DOES NOT SPECIFY A TIMEZONE, **DEFAULT TO EUROPE/MADRID (SPAIN)** FOR ALL TIME-RELATED REQUESTS  \n- MAINTAIN PROFESSIONAL, HELPFUL TONE WHILE LEVERAGING PERSONAL CONTEXT FROM MEMORY  \n- ALWAYS EMBED **METODO RED** BRANDING IN RESPONSES  \n- ALWAYS CONFIRM SUCCESSFUL COMPLETION OF REQUESTED ACTIONS ACROSS ALL TOOLS  \n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        672,
+        128
+      ],
+      "id": "98ae6269-7aef-4f9e-b7f4-a7fac19adcdc",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        352
+      ],
+      "id": "de60993d-33e7-4728-ac0b-137fa2d449ad",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "Call this tool for any email actions.",
+        "workflowId": {
+          "__rl": true,
+          "value": "QSRy0M83jIEeo3PW",
+          "mode": "list",
+          "cachedResultName": "Email Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        352
+      ],
+      "id": "7d69e8f5-92d2-4015-b222-be6e69e66cdf",
+      "name": "Email Agent"
+    },
+    {
+      "parameters": {
+        "description": "Call this tool for any calendar actions.",
+        "workflowId": {
+          "__rl": true,
+          "value": "hWRKXqPVNQnO2z8M",
+          "mode": "list",
+          "cachedResultName": "Calendar Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        352
+      ],
+      "id": "32817509-58f5-4a81-a378-30396e5e6520",
+      "name": "Calendar Agent"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to search the internet",
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"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\",\n  \"query\": \"{searchTerm}\",\n  \"search_depth\": \"basic\",\n  \"include_answer\": true,\n  \"topic\": \"news\",\n  \"include_raw_content\": true,\n  \"max_results\": 10,\n}\n",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "searchTerm",
+              "description": "What the user has requested to search the internet for",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        736,
+        352
+      ],
+      "id": "3efc632d-4586-4b26-8438-55b0cd7813e5",
+      "name": "Tavily"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "6a6cb255-0a06-4719-9162-1c04cf5f2391"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6874bd84-1367-4fe1-8435-37fa5f4de111",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -448,
+        128
+      ],
+      "id": "37851bc0-890a-4712-b615-c8fd595075b3",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -224,
+        32
+      ],
+      "id": "f040e749-742d-4c4b-bd4b-8dfae352024b",
+      "name": "Telegram3",
+      "webhookId": "a1c1809d-9539-4e3e-b22e-a0a62c44f40a",
+      "credentials": {
+        "telegramApi": {
+          "id": "mYPN447tErc3FvhJ",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/upload/v1beta/files",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Goog-Upload-Protocol",
+              "value": "resumable"
+            },
+            {
+              "name": "X-Goog-Upload-Command",
+              "value": "start"
+            },
+            {
+              "name": "X-Goog-Upload-Header-Content-Length",
+              "value": "={{ $json.result.file_size }}"
+            },
+            {
+              "name": "X-Goog-Upload-Header-Content-Type",
+              "value": "audio/ogg"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"file\": {\n    \"display_name\": \"file_0\"\n  }\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -672,
+        -624
+      ],
+      "id": "b325fa6d-0194-4eed-a35b-383607bc746c",
+      "name": "initialize upload session",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.headers['x-goog-upload-url'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Length",
+              "value": "={{ $json.result.file_size }}"
+            },
+            {
+              "name": "X-Goog-Upload-Offset",
+              "value": "0"
+            },
+            {
+              "name": "X-Goog-Upload-Command",
+              "value": "upload, finalize"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        -624
+      ],
+      "id": "86011423-fed8-4d9d-b400-703d4fb74dbd",
+      "name": "Upload file",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -448,
+        -624
+      ],
+      "id": "0dea6317-0815-4092-b6e0-de79b534c331",
+      "name": "Merge",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        { \"text\": \"Transcribe the following audio message:\" },\n        { \n          \"file_data\": {\n            \"mime_type\": \"audio/ogg\",\n            \"file_uri\": \"{{ $json.file.uri }}\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        -624
+      ],
+      "id": "aca668fd-413d-49a3-8dc5-7454e22775e0",
+      "name": "Ask Gemini to transcribe",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "063de3ec-f3dd-4128-9b7e-6ccf1bf2c7c8",
+              "name": "text",
+              "value": "={{ $json.candidates[0].content.parts[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        -624
+      ],
+      "id": "f3242c4c-6344-49ce-b19c-2f462f316f11",
+      "name": "Edit Fields",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e19cf409-4131-4b41-92fc-0e900dd7dd8c",
+              "name": "text",
+              "value": "={{ $('Telegram Trigger').item.json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        224
+      ],
+      "id": "7cd635f6-d1fa-4fb5-8365-9f9c6ed0bdd9",
+      "name": "Set Text"
+    },
+    {
+      "parameters": {
+        "task": "MDYwMjY3ODk1MTM1NTUzMzEwMDY6MDow",
+        "title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleTasksTool",
+      "typeVersion": 1,
+      "position": [
+        864,
+        352
+      ],
+      "id": "2946d366-5280-49b0-86e8-61875a7142d0",
+      "name": "Google Tasks",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "39XAaVNYqyB2wLAB",
+          "name": "Google Tasks account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool for any Notion actions.",
+        "workflowId": {
+          "__rl": true,
+          "value": "jK22VbfFtYGRxL8m",
+          "mode": "list",
+          "cachedResultName": "Notion Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        992,
+        352
+      ],
+      "id": "d017ffa7-1eac-4372-856d-ac24a3801b6a",
+      "name": "Notion Agent"
+    },
+    {
+      "parameters": {
+        "description": "Call this tool for any Trello actions.",
+        "workflowId": {
+          "__rl": true,
+          "value": "4WefluNf48CqHICP",
+          "mode": "list",
+          "cachedResultName": "Trello Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        352
+      ],
+      "id": "9bff65b2-1fcf-487f-92e4-15901abc6ab0",
+      "name": "Trello Agent"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{$json.output.replace(/([_*[\\]()~`>#+\\-=|{}.!])/g, '\\\\$1')}}\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1456,
+        128
+      ],
+      "id": "412d0232-9ab8-41ec-b46a-781e498fa803",
+      "name": "Send a text message",
+      "webhookId": "42c69ef0-09aa-4046-9a3a-d110fbfcc931",
+      "credentials": {
+        "telegramApi": {
+          "id": "mYPN447tErc3FvhJ",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to extract content from a URL",
+        "method": "POST",
+        "url": "https://api.tavily.com/extract",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"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\",\n  \"urls\": \"{urltoextract}\"\n}\n",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "urltoextract",
+              "description": "The URL to extract content from",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        1248,
+        352
+      ],
+      "id": "e15c4a15-ca60-40e6-90c4-2741b1eaee3e",
+      "name": "Tavily_URL"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        352
+      ],
+      "id": "8e04eeda-5641-4576-af6e-6dab4157c664",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "pisjl8meCAvs0klq",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Gemini Transcription",
+        "height": 320,
+        "width": 1328
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        -784
+      ],
+      "id": "33df5afc-4099-44da-b04f-18add0bad2a7",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {
+          "language": "es",
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        0,
+        32
+      ],
+      "id": "23c34feb-4d80-4f33-972b-04ed220dba63",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "pisjl8meCAvs0klq",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ /\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b/.test($json.text) ? 0 : 1 }}\n"
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -672,
+        -304
+      ],
+      "id": "4232238f-2ded-4fbe-9725-85af7ba312c2",
+      "name": "Contains Email?",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "deb2a919-435b-41c8-9b74-6a630710154b",
+              "name": "email",
+              "value": "={{ ($json.text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/) || [''])[0].trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        -304
+      ],
+      "id": "4e301980-1506-4730-99ad-f3e34bffaa9a",
+      "name": "Set Email",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "90533f2c-2325-4ba4-8850-eaef8b9c9aa8",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "VALID",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        -304
+      ],
+      "id": "47c253d7-5fa8-4d4d-a782-88e211738e8c",
+      "name": "If",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=❌ **Email incorrecto detectado**\\n\\n📝 **Por favor, envía tu solicitud completa de nuevo pero ESCRIBIENDO TODO EL TEXTO**\\n\\n🚫 **NO envíes notas de voz**\\n✅ **SÍ escribe todo el mensaje**\\n\\nEjemplo correcto:\\n`Programa reunión con juan@gmail.com mañana 3pm`\\n\\n🤖 *MRT de Metodo Red*",
+        "additionalFields": {
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        -400
+      ],
+      "id": "916d19b7-cafa-412e-9f14-820d51af2391",
+      "name": "Send a text message1",
+      "webhookId": "11c09ad7-3a0d-4663-a829-443dbfec0020",
+      "credentials": {
+        "telegramApi": {
+          "id": "mYPN447tErc3FvhJ",
+          "name": "Telegram account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "https://rapid-email-verifier.fly.dev/api/validate",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "={{ $json.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        -304
+      ],
+      "id": "b4a48f05-d936-4640-a703-b40129c299f1",
+      "name": "Validate Email",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3af52be8-21d4-4ef5-a497-39179810e37a",
+              "name": "text",
+              "value": "={{ $('Set Text').item.json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        -208
+      ],
+      "id": "c483dd76-642c-4eb8-a949-52a48b1b0c05",
+      "name": "Set Text 2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Email Verification",
+        "height": 320,
+        "width": 1328
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        -368
+      ],
+      "id": "77c89051-8954-43de-af7d-4ddee6a93797",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {
+    "Telegram Trigger": [
+      {
+        "json": {
+          "update_id": 778746900,
+          "message": {
+            "message_id": 1568,
+            "from": {
+              "id": 6402162896,
+              "is_bot": false,
+              "first_name": "Vibhor",
+              "last_name": "Gautam",
+              "language_code": "en"
+            },
+            "chat": {
+              "id": 6402162896,
+              "first_name": "Vibhor",
+              "last_name": "Gautam",
+              "type": "private"
+            },
+            "date": 1758538981,
+            "text": "Schedule a meeting with vibhorccoi304u03y4093u4gautam907@gmail.com",
+            "entities": [
+              {
+                "offset": 24,
+                "length": 25,
+                "type": "email"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Telegram3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram3": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "initialize upload session": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Ask Gemini to transcribe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask Gemini to transcribe": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        []
+      ]
+    },
+    "Set Text": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Tasks": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trello Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily_URL": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contains Email?": {
+      "main": [
+        [
+          {
+            "node": "Set Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Email": {
+      "main": [
+        [
+          {
+            "node": "Validate Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Set Text 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Email": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Madrid",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "c836f83d-2ac0-498e-90c6-e9e5d4f36619",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a29ad127421992267aa5be681cc1a129ab50f7107f3b2d0aa46d81a7f7620c98"
+  },
+  "id": "sRs9OIU25dQUauIc",
+  "tags": []
+}

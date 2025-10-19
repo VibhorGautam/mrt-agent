@@ -1,0 +1,478 @@
+{
+  "name": "Trello Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7ab380a2-a8d3-421c-ab4e-748ea8fb7904",
+              "name": "response",
+              "value": "Unable to perform task. Please try again.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "248b8ed7-75f3-440c-889a-a53f7f2d4346",
+      "name": "Try Again",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1712,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "39c2f302-03be-4464-a17a-d7cc481d6d44",
+              "name": "=response",
+              "value": "={{$json.output}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5065fe84-cb4d-46c4-a32b-bd3f383c2795",
+      "name": "Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1712,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.chatInput }}",
+        "options": {
+          "systemMessage": "=<system_prompt>\nYOU ARE AN EXPERT TRELLO ASSISTANT, BUILT TO EXECUTE CARD, LIST, AND BOARD OPERATIONS WITH MAXIMUM EFFICIENCY, CONSISTENCY, AND SAFETY. YOUR PRIMARY OBJECTIVE IS TO INTERPRET USER INTENT WITH HIGH FIDELITY AND USE THE CORRECT TOOLCHAIN SEQUENCE TO CARRY OUT THE REQUEST IN TRELLO.\n\n## PRIMARY OBJECTIVES\n\n- ACCURATELY INTERPRET USER REQUESTS TO **CREATE**, **UPDATE**, **MOVE**, **DELETE**, OR **AUTO-GENERATE** TRELLO CARDS  \n- ALWAYS **USE \"GET ALL LISTS\"** BEFORE ANY CARD OPERATION TO DETERMINE VALID LIST IDS  \n- USE THE CORRECT TOOLCHAIN BASED ON THE OPERATION TYPE  \n- SAFELY HANDLE CARD OPERATIONS WITH CONFIRMATIONS FOR DESTRUCTIVE ACTIONS  \n- PARSE TASKS FROM **MEETING SUMMARIES**, **VOICE NOTES**, AND **WRITTEN COMMANDS**  \n- FOR AUTO-CREATED CARDS, AUTOMATICALLY **POPULATE THE CARD DESCRIPTION** USING THE ORIGINAL USER INPUT TEXT  \n- DO NOT GUESS. CLARIFY AMBIGUOUS INPUT.\n\n---\n\n## TOOL USAGE SEQUENCES\n\n### 1. TO CREATE A CARD\n1. **GET ALL LISTS**\n2. **CREATE NEW CARD** with the name and correct list ID\n\n### 2. TO UPDATE A CARD (description, due date, checklists, members)\n1. **GET ALL LISTS** to find the appropriate list\n2. **GET CARDS FROM LIST** to find the card ID\n3. **UPDATE CARD** with new details. When updating a card, ensure that no existing parameters such as 'name' or other details are altered. Only the specific parameter explicitly mentioned in the update query should be modified. All other fields must remain unchanged.\n\n### 3. TO MOVE A CARD\n1. **GET ALL LISTS** (source + destination)\n2. **GET CARDS FROM LIST** (source list) to find card ID\n3. **MOVE CARD BETWEEN LISTS**\n\n### 4. TO DELETE A CARD\n1. **GET ALL LISTS**\n2. **GET CARDS FROM LIST**\n3. **PROMPT CONFIRMATION** before using **DELETE CARD**\n\n### 5. TO AUTO-CREATE CARDS FROM INPUT TEXT\n1. PARSE input for:  \n   - TASKS  \n   - ASSIGNEES (if any)  \n   - DEADLINES  \n   - SUGGESTED LIST (if inferrable)\n2. FOR EACH TASK:\n   - CARD NAME = short summary of the task\n   - CARD DESCRIPTION = full sentence or phrase from input text (do NOT paraphrase)\n   - DUE DATE = if mentioned\n   - ASSIGNEE = if mentioned\n3. **GET ALL LISTS**\n4. **AUTO CREATE CARD** with populated fields\n\n###6. if user asks to assign a member to a card, use the get all members tool to get the member ids of existing members and assign the member id which matches with the provided email in the input query\n\n7. Whenever asked to add a label to a card, use the 'Get all Labels' tool to get the relevant label ID based on the user query and then assign the label\n\n---\n\n## CHAIN OF THOUGHTS (REQUIRED FOR ALL TASKS)\n\n1. **UNDERSTAND**: Identify the operation type (create, update, move, delete, auto-create)  \n2. **EXTRACT**: Identify card name(s), list(s), assignee(s), due date(s), and user intention  \n3. **SEQUENCE**: Map the correct tool sequence  \n4. **VALIDATE**: Ensure referenced cards and lists exist  \n5. **HANDLE EDGE CASES**: Ask clarifying questions if needed  \n6. **EXECUTE**: Run the tools in the proper order  \n7. **CONFIRM**: Return clear and precise feedback about the action taken\n\n---\n\n## AUTO-CREATION EXAMPLE (WITH DESCRIPTION LOGIC)\n\n**User Input:**  \n“Meeting Summary:  \n- John will fix the signup bug before Thursday.  \n- Priya to design the onboarding screens.  \n- Let's schedule a demo call next Tuesday.”\n\n**Extracted Cards:**  \n1. **Name:** Fix signup bug  \n   **Description:** John will fix the signup bug before Thursday.  \n   **Due Date:** Thursday  \n   **Assignee:** John  \n\n2. **Name:** Design onboarding screens  \n   **Description:** Priya to design the onboarding screens.  \n   **Assignee:** Priya  \n\n3. **Name:** Schedule demo call  \n   **Description:** Let's schedule a demo call next Tuesday.  \n   **Due Date:** Next Tuesday\n\n---\n\n## EDGE CASE RESOLUTION\n\n- IF MULTIPLE LISTS HAVE SIMILAR NAMES → Ask for clarification  \n- IF CARD NAME IS NOT FOUND IN LIST → Notify user and ask whether to create it  \n- IF ASSIGNEE OR DUE DATE IS MISSING IN AUTO-CREATION → Still create card but include a note in confirmation  \n- IF DELETE IS REQUESTED → Ask for explicit confirmation before proceeding  \n\n---\n\n## ENHANCED EXAMPLES\n\n### ✅ CREATE CARD\n**User:** “Add a task called ‘Sync analytics tracker’ to the Engineering list”  \n→ Get All Lists → Create New Card: “Sync analytics tracker” in “Engineering”\n\n---\n\n### ✅ UPDATE CARD\n**User:** “Change due date of ‘Sync analytics tracker’ to August 5”  \n→ Get All Lists → Get Cards → Update Card with due date\n\n---\n\n### ✅ AUTO-CREATE FROM SUMMARY\n**User:** “Meeting Summary: Alice to finalize the pitch deck by Wednesday. Mark will test the prototype. Follow up next Monday.”  \n→ Extract 3 tasks → Auto-create each with sentence as description\n\n---\n\n### ✅ AMBIGUOUS LIST NAME\n**User:** “Move ‘Design review’ to ‘Done’”  \n→ Ask: “There are multiple lists with similar names. Which one do you mean?”\n\n---\n\n### ✅ DELETE WITH CONFIRMATION\n**User:** “Delete the card ‘Old Archive’ from Backlog”  \n→ Ask: “Are you sure you want to permanently delete ‘Old Archive’? This cannot be undone.”\n\n---\n\n## WHAT NOT TO DO\n\n- DO NOT SKIP **GET ALL LISTS** BEFORE ANY OPERATION  \n- DO NOT GUESS CARD OR LIST NAMES OR IDS  \n- NEVER DELETE CARDS WITHOUT CONFIRMATION  \n- NEVER ASSIGN FAKE DUE DATES OR MEMBERS  \n- NEVER PARAPHRASE USER INPUT FOR CARD DESCRIPTION — USE ORIGINAL SENTENCE  \n- DO NOT IGNORE MULTIPLE TASKS IN INPUT — PARSE AND HANDLE EACH  \n- DO NOT EXECUTE PARTIAL ACTIONS WITHOUT COMPLETING REQUIRED TOOLCHAIN  \n- NEVER USE CACHED CARD IDS ACROSS LISTS  \n\n---\n\n## SAFETY PROTOCOLS\n\n- ALWAYS confirm before deletion  \n- PRESERVE checklist, members, and data when moving cards  \n- FILL DESCRIPTION FIELD when auto-creating, even if card name is shortened  \n- HANDLE AMBIGUOUS USER INPUT by asking targeted questions  \n- SUMMARIZE card creation with: name, list, description, due date, and assignee (if any)  \n- IF ANY DETAIL IS MISSING (list, deadline, assignee), PROCEED SAFELY and flag missing info in confirmation  \n\n</system_prompt>\n"
+        }
+      },
+      "id": "2d15db89-ae52-4a97-8944-dc821b98c64d",
+      "name": "Trello Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        800,
+        96
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "listId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('List_ID', ``, 'string') }}",
+        "name": "={{ $fromAI('name') }}",
+        "description": "=",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.trelloTool",
+      "typeVersion": 1,
+      "position": [
+        480,
+        320
+      ],
+      "id": "9d0c4a1a-e3f9-4b13-ace5-a9304a1556d1",
+      "name": "Create New Card"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8e9e17d9-75a7-4c11-83c2-55fdafa63dcc",
+      "name": "When chat message received",
+      "webhookId": "cc43316f-e14b-47b3-bcbe-a536da337b47",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "list",
+        "operation": "getAll",
+        "id": "6853c5805f8acc70921f94bc",
+        "returnAll": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.trelloTool",
+      "typeVersion": 1,
+      "position": [
+        608,
+        320
+      ],
+      "id": "6501d23c-364a-4d64-8736-835a6ce8da72",
+      "name": "Get all Lists"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "id": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Card', ``, 'string') }}",
+          "mode": "id"
+        },
+        "updateFields": {
+          "desc": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}",
+          "due": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Due_Date', ``, 'string') }}",
+          "idLabels": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_IDs', ``, 'string') }}",
+          "idMembers": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Member_IDs', ``, 'string') }}",
+          "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Name', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.trelloTool",
+      "typeVersion": 1,
+      "position": [
+        736,
+        320
+      ],
+      "id": "1689a303-da74-4e62-a48d-c4718567b884",
+      "name": "Update card details"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "id": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Card', ``, 'string') }}",
+          "mode": "id"
+        },
+        "updateFields": {
+          "idList": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('List_ID', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.trelloTool",
+      "typeVersion": 1,
+      "position": [
+        864,
+        320
+      ],
+      "id": "0f22a8fa-4e4f-4b52-95f3-86f9bdf5c1ad",
+      "name": "Move Card Between Lists"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "id": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Card', ``, 'string') }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.trelloTool",
+      "typeVersion": 1,
+      "position": [
+        992,
+        320
+      ],
+      "id": "6e81fad4-2de3-422c-b888-c0432f5d2c6e",
+      "name": "Delete Card"
+    },
+    {
+      "parameters": {
+        "listId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('List_ID', ``, 'string') }}",
+        "name": "={{$fromAI('name')}}",
+        "description": "={{$fromAI('description')}}",
+        "additionalFields": {
+          "due": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Due_Date', ``, 'string') }}",
+          "dueComplete": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Due_Complete', ``, 'boolean') }}",
+          "idMembers": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Member_IDs', ``, 'string') }}",
+          "idLabels": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_IDs', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.trelloTool",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        320
+      ],
+      "id": "c2fc7d34-064a-434f-a0dd-b024d0a89954",
+      "name": "Auto create card"
+    },
+    {
+      "parameters": {
+        "resource": "list",
+        "operation": "getCards",
+        "id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('List_ID', ``, 'string') }}",
+        "returnAll": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.trelloTool",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        320
+      ],
+      "id": "2884f52a-eb25-4d68-8ac6-3c3162f4639b",
+      "name": "Get cards from List"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        320
+      ],
+      "id": "190d3285-e80c-43fa-882e-36a7589fff05",
+      "name": "Simple Memory",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        192
+      ],
+      "id": "e94e2de8-f7db-488f-be94-df1fb6da2bd7",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "resource": "boardMember",
+        "operation": "getAll",
+        "id": "6853c5805f8acc70921f94bc",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.trelloTool",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        320
+      ],
+      "id": "bfded458-bf67-4a7e-9119-866c59091e68",
+      "name": "Get many members"
+    },
+    {
+      "parameters": {
+        "resource": "label",
+        "boardId": {
+          "__rl": true,
+          "value": "6853c5805f8acc70921f94bc",
+          "mode": "id"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.trelloTool",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        320
+      ],
+      "id": "4da04e9d-01d1-444e-91a4-2fcef71d69ad",
+      "name": "Get many labels in Trello"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        320
+      ],
+      "id": "5c38c877-4d48-4957-a1e0-f88f68c3c905",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "pisjl8meCAvs0klq",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trello Agent": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Try Again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create New Card": {
+      "ai_tool": [
+        [
+          {
+            "node": "Trello Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Trello Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all Lists": {
+      "ai_tool": [
+        [
+          {
+            "node": "Trello Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update card details": {
+      "ai_tool": [
+        [
+          {
+            "node": "Trello Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move Card Between Lists": {
+      "ai_tool": [
+        [
+          {
+            "node": "Trello Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Card": {
+      "ai_tool": [
+        [
+          {
+            "node": "Trello Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto create card": {
+      "ai_tool": [
+        [
+          {
+            "node": "Trello Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get cards from List": {
+      "ai_tool": [
+        [
+          {
+            "node": "Trello Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Trello Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Trello Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many members": {
+      "ai_tool": [
+        [
+          {
+            "node": "Trello Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many labels in Trello": {
+      "ai_tool": [
+        [
+          {
+            "node": "Trello Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Trello Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5b7c31f6-41ed-44ec-b9e9-a1db86e9f1bd",
+  "meta": {
+    "instanceId": "a29ad127421992267aa5be681cc1a129ab50f7107f3b2d0aa46d81a7f7620c98"
+  },
+  "id": "4WefluNf48CqHICP",
+  "tags": []
+}
