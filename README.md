@@ -20,3 +20,52 @@ It brings together multiple specialized sub-agents to handle your daily workflow
 
 Each agent is represented by a modular **JSON file** built in [n8n](https://n8n.io/), enabling easy migration, customization, and scaling.
 
+agents/
+│
+├── mrt_agent.json
+├── trello_agent.json
+├── gmail_agent.json
+├── notion_agent.json
+├── google_calendar_agent.json
+└── google_tasks_agent.json
+
+
+---
+
+## 💬 Try the Bot
+
+You can test the live MRT agent directly on Telegram here (:  
+👉 (https://t.me/mrtvg_bot)
+
+---
+
+## ⚙️ Setup
+
+1. Import the JSON files into your n8n workspace.  
+2. Configure API keys for:
+   - Trello  
+   - Google Calendar  
+   - Gmail  
+   - Notion  
+3. Run the main **MRT Agent** workflow to connect all modules.
+
+---
+
+## 📈 Future Scope
+
+- Integrate Slack, WhatsApp, and Google Drive  
+- Add task prioritization and scheduling optimization  
+- Expand multi-agent coordination logic  
+
+---
+
+## 📄 License
+
+Released under the [MIT License](LICENSE).
+
+---
+
+## 🤝 Contributing
+
+If you'd like to collaborate or explore custom AI automations, reach out at  
+📧 vibhorgautam907@gmail.com
