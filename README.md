@@ -23,7 +23,6 @@ agents/
 ├── gmail_agent.json
 ├── notion_agent.json
 ├── google_calendar_agent.json
-└── google_tasks_agent.json
 ```
 
 ## 💬 Try the Bot
